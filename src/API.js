@@ -10,7 +10,7 @@ function getImages(searchQuery) {
       image_type: 'photo',
       orientation: 'horizontal',
       safesearch: true,
-      per_page: 5,
+      per_page: 40,
     },
   });
 }
