@@ -1,5 +1,5 @@
 import './css/styles.css';
-import PixabayService from './api';
+import PixabayService from './api-pixabay';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const inputElement = document.querySelector('input');
