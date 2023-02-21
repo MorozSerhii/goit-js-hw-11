@@ -37,17 +37,25 @@ gap: 20px;
 }
 
 .photo-card{
+  width: 100%;
+
+}
+.gallery__item{
 width: calc((100% - 90px)/4);
 
 }
 
 .photo-img{
+  object-fit: cover;
 width: 100%;
- height: 70%;
+ height: 300px
  
 }
 
-
+a {
+  text-decoration: none;
+  color:  #090909;
+}
 
 
 button {
@@ -115,4 +123,9 @@ input::placeholder{
 
 .is-hidden{
   display: none;
+}
+
+.load-more{
+  margin-bottom: 25px;
+  margin-top: 25px;
 }
