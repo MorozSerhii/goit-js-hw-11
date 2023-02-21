@@ -8,17 +8,16 @@ import debounce from 'lodash.debounce';
 const inputElement = document.querySelector('input');
 const imageContainer = document.querySelector('.gallery');
 const form = document.querySelector('.search-form');
-const loadBtn = document.querySelector('.load-more');
+const animationContainer = document.querySelector('.loader');
+console.log(animationContainer);
 
 const pixabayService = new PixabayService();
 
 const lightBox = new SimpleLightbox('.gallery a');
 form.addEventListener('submit', pullMarkup);
-loadBtn.addEventListener('click', loadMore);
 inputElement.addEventListener('input', event => {
   if (event.target.value === '') {
     onClear();
-    loadBtn.classList.add('is-hidden');
     pixabayService.resetPage();
     return;
   }
@@ -33,6 +32,7 @@ async function pullMarkup(e) {
     return;
   }
   pixabayService.query = searchQuery;
+  pixabayService.resetPage();
   const response = await pixabayService.getImages();
 
   if (response.hits.length === 0) {
@@ -40,11 +40,8 @@ async function pullMarkup(e) {
       'Sorry, there are no images matching your search query. Please try again'
     );
   }
-  loadBtn.classList.remove('is-hidden');
-
   const totalHits = await response.totalHits;
   onClear();
-  pixabayService.resetPage();
   pushMarkup(response.hits);
   lightBox.refresh();
   notiflix(totalHits);
@@ -57,23 +54,6 @@ function pushMarkup(response) {
   );
 
   imageContainer.insertAdjacentHTML('beforeend', allImages);
-}
-
-async function loadMore(e) {
-  e.preventDefault();
-  pixabayService.incrementPage();
-  const response = await pixabayService.getImages();
-  const totalHits = await response.totalHits;
-  if (Math.ceil(totalHits / 40) === pixabayService.page) {
-    Notify.failure(
-      'happy end, no more images to load. Please enter a different search query'
-    );
-    loadBtn.classList.add('is-hidden');
-    return;
-  }
-  pushMarkup(response.hits);
-  smoothScroll();
-  lightBox.refresh();
 }
 
 function createMarkup({
@@ -141,21 +121,22 @@ async function checkPosition() {
   const position = scrolled + screenHeight;
 
   if (position >= threshold) {
-    console.log(`position`);
     pixabayService.incrementPage();
+    animationContainer.classList.remove('is-hidden');
     const response = await pixabayService.getImages();
     const totalHits = await response.totalHits;
+
     if (Math.ceil(totalHits / 40) === pixabayService.page) {
       Notify.failure(
         'happy end, no more images to load. Please enter a different search query'
       );
-      loadBtn.classList.add('is-hidden');
       return;
     }
+    animationContainer.classList.add('is-hidden');
     pushMarkup(response.hits);
     smoothScroll();
     lightBox.refresh();
   }
 }
-let DEBOUNCE_DELAY = 200;
+let DEBOUNCE_DELAY = 300;
 window.addEventListener('scroll', debounce(checkPosition, DEBOUNCE_DELAY));
