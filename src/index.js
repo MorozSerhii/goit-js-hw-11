@@ -51,9 +51,10 @@ async function pullMarkup(e) {
   setTimeout(() => {
     animationContainer.classList.add('is-hidden');
   }, 500);
+  setTimeout(() => {
+    lightBox.refresh();
+  }, 500);
 
-  // pushMarkup(response.hits);
-  lightBox.refresh();
   notiflix(totalHits);
 }
 
@@ -146,9 +147,9 @@ async function checkPosition() {
       }
 
       pushMarkup(response.hits);
-      smoothScroll();
 
       lightBox.refresh();
+      smoothScroll();
     } catch {
       return;
     }
