@@ -23,7 +23,7 @@ export default class PixabayService {
 
       return reqvestData.data;
     } catch {
-      console.error('щось пішло не так');
+      return;
     }
   }
 

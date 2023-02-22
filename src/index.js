@@ -8,7 +8,7 @@ import debounce from 'lodash.debounce';
 const inputElement = document.querySelector('input');
 const imageContainer = document.querySelector('.gallery');
 const form = document.querySelector('.search-form');
-const animationContainer = document.querySelector('.loader');
+const animationContainer = document.querySelector('.wrapper');
 
 const pixabayService = new PixabayService();
 
@@ -25,14 +25,18 @@ inputElement.addEventListener('input', event => {
 
 async function pullMarkup(e) {
   e.preventDefault();
+  onClear();
   const searchQuery = e.currentTarget.elements.searchQuery.value.trim();
   if (searchQuery === '') {
-    Notify.failure('Hey! enter a search query dude!');
+    Notify.failure('Hey! enter a search query !');
 
     return;
   }
+  animationContainer.classList.remove('is-hidden');
+
   pixabayService.query = searchQuery;
   pixabayService.resetPage();
+
   const response = await pixabayService.getImages();
 
   if (response.hits.length === 0) {
@@ -41,9 +45,14 @@ async function pullMarkup(e) {
     );
   }
   const totalHits = await response.totalHits;
+  setTimeout(() => {
+    pushMarkup(response.hits);
+  }, 500);
+  setTimeout(() => {
+    animationContainer.classList.add('is-hidden');
+  }, 500);
 
-  onClear();
-  pushMarkup(response.hits);
+  // pushMarkup(response.hits);
   lightBox.refresh();
   notiflix(totalHits);
 }
@@ -121,24 +130,28 @@ async function checkPosition() {
   const threshold = height - screenHeight / 4;
   const position = scrolled + screenHeight;
   if (position >= threshold) {
-    pixabayService.incrementPage();
+    try {
+      pixabayService.incrementPage();
+      const response = await pixabayService.getImages();
+      const totalHits = await response.totalHits;
 
-    const response = await pixabayService.getImages();
-    const totalHits = await response.totalHits;
+      if (Math.ceil(totalHits / 40) === pixabayService.page) {
+        Notify.failure(
+          'happy end, no more images to load. Please enter a different search query'
+        );
+        window.removeEventListener(
+          'scroll',
+          debounce(checkPosition, DEBOUNCE_DELAY)
+        );
+      }
 
-    if (Math.ceil(totalHits / 40) === pixabayService.page) {
-      Notify.failure(
-        'happy end, no more images to load. Please enter a different search query'
-      );
-      window.removeEventListener(
-        'scroll',
-        debounce(checkPosition, DEBOUNCE_DELAY)
-      );
+      pushMarkup(response.hits);
+      smoothScroll();
+
+      lightBox.refresh();
+    } catch {
+      return;
     }
-
-    pushMarkup(response.hits);
-    smoothScroll();
-    lightBox.refresh();
   }
 }
 let DEBOUNCE_DELAY = 300;
