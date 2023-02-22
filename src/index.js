@@ -45,9 +45,6 @@ async function pullMarkup(e) {
       'Sorry, there are no images matching your search query. Please try again'
     );
   }
-  if (response.hits.length >= 40) {
-    window.addEventListener('scroll', debounce(checkPosition, DEBOUNCE_DELAY));
-  }
   totalHits = await response.totalHits;
   setTimeout(() => {
     pushMarkup(response.hits);
@@ -137,9 +134,12 @@ async function checkPosition() {
   if (position >= threshold) {
     try {
       if (Math.ceil(totalHits / 40) === pixabayService.page) {
-        Notify.failure(
-          'happy end, no more images to load. Please enter a different search query'
-        );
+        setTimeout(() => {
+          Notify.failure(
+            'happy end, no more images to load. Please enter a different search query'
+          );
+        }, 300);
+
         window.removeEventListener(
           'scroll',
           debounce(checkPosition, DEBOUNCE_DELAY)
@@ -157,3 +157,4 @@ async function checkPosition() {
   }
 }
 let DEBOUNCE_DELAY = 300;
+window.addEventListener('scroll', debounce(checkPosition, DEBOUNCE_DELAY));
