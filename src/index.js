@@ -9,11 +9,11 @@ const inputElement = document.querySelector('input');
 const imageContainer = document.querySelector('.gallery');
 const form = document.querySelector('.search-form');
 const animationContainer = document.querySelector('.loader');
-console.log(animationContainer);
 
 const pixabayService = new PixabayService();
 
 const lightBox = new SimpleLightbox('.gallery a');
+
 form.addEventListener('submit', pullMarkup);
 inputElement.addEventListener('input', event => {
   if (event.target.value === '') {
@@ -41,6 +41,7 @@ async function pullMarkup(e) {
     );
   }
   const totalHits = await response.totalHits;
+
   onClear();
   pushMarkup(response.hits);
   lightBox.refresh();
@@ -119,10 +120,9 @@ async function checkPosition() {
   const scrolled = window.scrollY;
   const threshold = height - screenHeight / 4;
   const position = scrolled + screenHeight;
-
   if (position >= threshold) {
     pixabayService.incrementPage();
-    animationContainer.classList.remove('is-hidden');
+
     const response = await pixabayService.getImages();
     const totalHits = await response.totalHits;
 
@@ -130,13 +130,17 @@ async function checkPosition() {
       Notify.failure(
         'happy end, no more images to load. Please enter a different search query'
       );
-      return;
+      window.removeEventListener(
+        'scroll',
+        debounce(checkPosition, DEBOUNCE_DELAY)
+      );
     }
-    animationContainer.classList.add('is-hidden');
+
     pushMarkup(response.hits);
     smoothScroll();
     lightBox.refresh();
   }
 }
 let DEBOUNCE_DELAY = 300;
+
 window.addEventListener('scroll', debounce(checkPosition, DEBOUNCE_DELAY));
