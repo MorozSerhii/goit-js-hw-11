@@ -22,6 +22,7 @@ inputElement.addEventListener('input', event => {
     return;
   }
 });
+let totalHits = '';
 
 async function pullMarkup(e) {
   e.preventDefault();
@@ -44,7 +45,10 @@ async function pullMarkup(e) {
       'Sorry, there are no images matching your search query. Please try again'
     );
   }
-  const totalHits = await response.totalHits;
+  if (response.hits.length >= 40) {
+    window.addEventListener('scroll', debounce(checkPosition, DEBOUNCE_DELAY));
+  }
+  totalHits = await response.totalHits;
   setTimeout(() => {
     pushMarkup(response.hits);
   }, 500);
@@ -132,10 +136,6 @@ async function checkPosition() {
   const position = scrolled + screenHeight;
   if (position >= threshold) {
     try {
-      pixabayService.incrementPage();
-      const response = await pixabayService.getImages();
-      const totalHits = await response.totalHits;
-
       if (Math.ceil(totalHits / 40) === pixabayService.page) {
         Notify.failure(
           'happy end, no more images to load. Please enter a different search query'
@@ -144,10 +144,11 @@ async function checkPosition() {
           'scroll',
           debounce(checkPosition, DEBOUNCE_DELAY)
         );
+        return;
       }
-
+      pixabayService.incrementPage();
+      const response = await pixabayService.getImages();
       pushMarkup(response.hits);
-
       lightBox.refresh();
       smoothScroll();
     } catch {
@@ -156,5 +157,3 @@ async function checkPosition() {
   }
 }
 let DEBOUNCE_DELAY = 300;
-
-window.addEventListener('scroll', debounce(checkPosition, DEBOUNCE_DELAY));
